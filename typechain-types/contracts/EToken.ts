@@ -44,6 +44,7 @@ export interface ETokenInterface extends Interface {
       | "name"
       | "owner"
       | "pendingOwner"
+      | "protocolId"
       | "renounceOwnership"
       | "setOperator"
       | "symbol"
@@ -112,7 +113,7 @@ export interface ETokenInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "finalizeDiscloseEncryptedAmount",
-    values: [BigNumberish, BigNumberish, BytesLike[]]
+    values: [BigNumberish, BytesLike, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "isOperator",
@@ -122,6 +123,10 @@ export interface ETokenInterface extends Interface {
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "pendingOwner",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "protocolId",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -199,6 +204,7 @@ export interface ETokenInterface extends Interface {
     functionFragment: "pendingOwner",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "protocolId", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -428,7 +434,11 @@ export interface EToken extends BaseContract {
   >;
 
   finalizeDiscloseEncryptedAmount: TypedContractMethod<
-    [requestId: BigNumberish, amount: BigNumberish, signatures: BytesLike[]],
+    [
+      requestId: BigNumberish,
+      cleartexts: BytesLike,
+      decryptionProof: BytesLike
+    ],
     [void],
     "nonpayable"
   >;
@@ -444,6 +454,8 @@ export interface EToken extends BaseContract {
   owner: TypedContractMethod<[], [string], "view">;
 
   pendingOwner: TypedContractMethod<[], [string], "view">;
+
+  protocolId: TypedContractMethod<[], [bigint], "view">;
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
@@ -557,7 +569,11 @@ export interface EToken extends BaseContract {
   getFunction(
     nameOrSignature: "finalizeDiscloseEncryptedAmount"
   ): TypedContractMethod<
-    [requestId: BigNumberish, amount: BigNumberish, signatures: BytesLike[]],
+    [
+      requestId: BigNumberish,
+      cleartexts: BytesLike,
+      decryptionProof: BytesLike
+    ],
     [void],
     "nonpayable"
   >;
@@ -577,6 +593,9 @@ export interface EToken extends BaseContract {
   getFunction(
     nameOrSignature: "pendingOwner"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "protocolId"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;

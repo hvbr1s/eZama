@@ -112,11 +112,6 @@ const _abi = [
     type: "error",
   },
   {
-    inputs: [],
-    name: "UnsupportedHandleType",
-    type: "error",
-  },
-  {
     anonymous: false,
     inputs: [
       {
@@ -516,14 +511,14 @@ const _abi = [
         type: "uint256",
       },
       {
-        internalType: "uint64",
-        name: "amount",
-        type: "uint64",
+        internalType: "bytes",
+        name: "cleartexts",
+        type: "bytes",
       },
       {
-        internalType: "bytes[]",
-        name: "signatures",
-        type: "bytes[]",
+        internalType: "bytes",
+        name: "decryptionProof",
+        type: "bytes",
       },
     ],
     name: "finalizeDiscloseEncryptedAmount",

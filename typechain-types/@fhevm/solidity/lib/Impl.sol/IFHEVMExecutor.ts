@@ -50,6 +50,7 @@ export interface IFHEVMExecutorInterface extends Interface {
       | "fheShl"
       | "fheShr"
       | "fheSub"
+      | "getInputVerifierAddress"
       | "trivialEncrypt"
       | "verifyCiphertext"
   ): FunctionFragment;
@@ -153,6 +154,10 @@ export interface IFHEVMExecutorInterface extends Interface {
     values: [BytesLike, BytesLike, BytesLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "getInputVerifierAddress",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "trivialEncrypt",
     values: [BigNumberish, BigNumberish]
   ): string;
@@ -193,6 +198,10 @@ export interface IFHEVMExecutorInterface extends Interface {
   decodeFunctionResult(functionFragment: "fheShl", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "fheShr", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "fheSub", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getInputVerifierAddress",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "trivialEncrypt",
     data: BytesLike
@@ -394,6 +403,8 @@ export interface IFHEVMExecutor extends BaseContract {
     "nonpayable"
   >;
 
+  getInputVerifierAddress: TypedContractMethod<[], [string], "view">;
+
   trivialEncrypt: TypedContractMethod<
     [ct: BigNumberish, toType: BigNumberish],
     [string],
@@ -585,6 +596,9 @@ export interface IFHEVMExecutor extends BaseContract {
     [string],
     "nonpayable"
   >;
+  getFunction(
+    nameOrSignature: "getInputVerifierAddress"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "trivialEncrypt"
   ): TypedContractMethod<
