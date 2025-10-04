@@ -2,42 +2,35 @@
 pragma solidity 0.8.27;
 
 import { FHE, euint64, externalEuint64, eaddress, ebool } from "@fhevm/solidity/lib/FHE.sol";
+import { IConfidentialFungibleToken } from "@openzeppelin/confidential-contracts/interfaces/IConfidentialFungibleToken.sol";
 import { SepoliaConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-interface IConfidentialERC20 {
-    function transfer(address to, externalEuint64 encryptedAmount, bytes calldata inputProof) external returns (bool);
-    function transfer(address to, euint64 amount) external returns (bool);
-    function transferFrom(address from, address to, euint64 amount) external returns (bool);
-}
-
 contract BatchTransfer is ReentrancyGuard, Ownable {
-    using SafeERC20 for IERC20;
-    uint16 public MAX_BATCH_SIZE = 200;
+    uint16 public MAX_BATCH_SIZE = 50;
     
     event BatchTokenTransfer(address indexed sender, address indexed token, euint64 totalAmount, uint256 recipients);
     event TokenRescued(address indexed token, address indexed owner, euint64 amount);
     event NewMaxBatchSize(uint16 size);
 
+    error InsufficientTokenAllowance();
+    error InsufficientTokenBalance();
     error ArrayLengthMismatch();
     error BatchSizeExceeded();
     error ZeroAddress();
-    error InsufficientTokenAllowance();
-    error InsufficientTokenBalance();
     error NoTokenToRescue();
     error ETHSendFailed();
     error RequireOneRecipient();
     error NotEnoughETH();
     error MinimumSizeIsTen();
     error MaximumSizeExceeded();
+    error BatchFailed();
 
     constructor(address owner_) Ownable(owner_){}
 
     /*//////////////////////////////////////////////////////////////
-                                ERC20 Tokens Batching 
+                        ERC20 Tokens Batching 
     //////////////////////////////////////////////////////////////*/
 
     /// @notice Send the SAME token amount to many recipients
@@ -55,18 +48,23 @@ contract BatchTransfer is ReentrancyGuard, Ownable {
         if (n > MAX_BATCH_SIZE) revert BatchSizeExceeded();
 
         euint64 eAmountPerRecipient = FHE.fromExternal(amountPerRecipient, inputProof);
-        IConfidentialERC20 tokenContract = IConfidentialERC20(token);
+        FHE.allowThis(eAmountPerRecipient);
+        FHE.allow(eAmountPerRecipient, msg.sender);
 
+        IConfidentialFungibleToken tokenContract = IConfidentialFungibleToken(token);
         for (uint16 i = 0; i < n; ) {
             address to = recipients[i];
             if (to == address(0)) revert ZeroAddress();
 
-            tokenContract.transferFrom(msg.sender, to, eAmountPerRecipient);
+            tokenContract.confidentialTransferFrom(msg.sender, to, eAmountPerRecipient);
             unchecked { ++i; }
         }
 
         // Calculate total for event
         euint64 eTotal = FHE.mul(eAmountPerRecipient, uint64(n));
+        FHE.allowThis(eTotal);
+        FHE.allow(eTotal, msg.sender);
+
         emit BatchTokenTransfer(msg.sender, token, eTotal, n);
     }
 
@@ -85,21 +83,20 @@ contract BatchTransfer is ReentrancyGuard, Ownable {
         if (n != amounts.length) revert ArrayLengthMismatch();
         if (n > MAX_BATCH_SIZE) revert BatchSizeExceeded();
 
-        IConfidentialERC20 tokenContract = IConfidentialERC20(token);
         euint64 eTotal = FHE.asEuint64(0);
+        IConfidentialFungibleToken tokenContract = IConfidentialFungibleToken(token);
 
         for (uint16 i = 0; i < n; ) {
             address to = recipients[i];
             if (to == address(0)) revert ZeroAddress();
 
             euint64 eAmount = FHE.fromExternal(amounts[i], inputProof);
-            tokenContract.transferFrom(msg.sender, to, eAmount);
+            tokenContract.confidentialTransferFrom(msg.sender, to, eAmount);
 
             // Accumulate total
             eTotal = FHE.add(eTotal, eAmount);
             unchecked { ++i; }
         }
-
         emit BatchTokenTransfer(msg.sender, token, eTotal, n);
     }
 
@@ -113,15 +110,20 @@ contract BatchTransfer is ReentrancyGuard, Ownable {
         if (token == address(0)) revert ZeroAddress();
         if (to == address(0)) revert ZeroAddress();
 
-        IConfidentialERC20(token).transfer(to, amount, inputProof);
+        euint64 eAmount = FHE.fromExternal(amount, inputProof);
+        FHE.allowThis(eAmount);
+        FHE.allow(eAmount, msg.sender);
 
-        emit TokenRescued(token, to, FHE.fromExternal(amount, inputProof));
+        IConfidentialFungibleToken tokenContract = IConfidentialFungibleToken(token);
+        tokenContract.confidentialTransfer(to, eAmount);
+
+        emit TokenRescued(token, to, eAmount);
     }
 
     /// @notice Changes MAX_BATCH_SIZE
     function changeMaxBatchSize(uint16 size) external onlyOwner{
         if (size < 10) revert MinimumSizeIsTen();
-        if (size > 1000) revert MaximumSizeExceeded();
+        if (size > 100) revert MaximumSizeExceeded();
         MAX_BATCH_SIZE = size;
 
         emit NewMaxBatchSize(size);
