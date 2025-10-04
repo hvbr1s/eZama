@@ -19,6 +19,10 @@ contract eToken is SepoliaConfig, ConfidentialFungibleToken, Ownable2Step {
         _mint(owner, encryptedAmount);
     }
 
+    function decimals() public view virtual override returns (uint8){
+        return 6;
+    }
+
     function _update(address from, address to, euint64 amount) internal virtual override returns (euint64 transferred) {
         transferred = super._update(from, to, amount);
         FHE.allow(confidentialTotalSupply(), owner());

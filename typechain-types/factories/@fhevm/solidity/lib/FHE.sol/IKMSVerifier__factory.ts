@@ -22,9 +22,9 @@ const _abi = [
         type: "bytes",
       },
       {
-        internalType: "bytes[]",
-        name: "signatures",
-        type: "bytes[]",
+        internalType: "bytes",
+        name: "decryptionProof",
+        type: "bytes",
       },
     ],
     name: "verifyDecryptionEIP712KMSSignatures",

@@ -7,7 +7,7 @@ import { SepoliaConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract BatchTransfer is ReentrancyGuard, Ownable {
+contract eBatcher is ReentrancyGuard, Ownable {
     uint16 public MAX_BATCH_SIZE = 50;
     
     event BatchTokenTransfer(address indexed sender, address indexed token, euint64 totalAmount, uint256 recipients);

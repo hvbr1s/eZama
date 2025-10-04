@@ -26,7 +26,7 @@ export interface IKMSVerifierInterface extends Interface {
 
   encodeFunctionData(
     functionFragment: "verifyDecryptionEIP712KMSSignatures",
-    values: [BytesLike[], BytesLike, BytesLike[]]
+    values: [BytesLike[], BytesLike, BytesLike]
   ): string;
 
   decodeFunctionResult(
@@ -82,7 +82,7 @@ export interface IKMSVerifier extends BaseContract {
     [
       handlesList: BytesLike[],
       decryptedResult: BytesLike,
-      signatures: BytesLike[]
+      decryptionProof: BytesLike
     ],
     [boolean],
     "nonpayable"
@@ -98,7 +98,7 @@ export interface IKMSVerifier extends BaseContract {
     [
       handlesList: BytesLike[],
       decryptedResult: BytesLike,
-      signatures: BytesLike[]
+      decryptionProof: BytesLike
     ],
     [boolean],
     "nonpayable"

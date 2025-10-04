@@ -3,7 +3,9 @@
 /* eslint-disable */
 import type {
   BaseContract,
+  BytesLike,
   FunctionFragment,
+  Result,
   Interface,
   ContractRunner,
   ContractMethod,
@@ -14,9 +16,19 @@ import type {
   TypedDeferredTopicFilter,
   TypedEventLog,
   TypedListener,
+  TypedContractMethod,
 } from "../../../../common";
 
-export interface EthereumConfigInterface extends Interface {}
+export interface EthereumConfigInterface extends Interface {
+  getFunction(nameOrSignature: "protocolId"): FunctionFragment;
+
+  encodeFunctionData(
+    functionFragment: "protocolId",
+    values?: undefined
+  ): string;
+
+  decodeFunctionResult(functionFragment: "protocolId", data: BytesLike): Result;
+}
 
 export interface EthereumConfig extends BaseContract {
   connect(runner?: ContractRunner | null): EthereumConfig;
@@ -61,9 +73,15 @@ export interface EthereumConfig extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  protocolId: TypedContractMethod<[], [bigint], "view">;
+
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
+
+  getFunction(
+    nameOrSignature: "protocolId"
+  ): TypedContractMethod<[], [bigint], "view">;
 
   filters: {};
 }

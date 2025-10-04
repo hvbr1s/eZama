@@ -101,7 +101,7 @@ export interface ConfidentialFungibleTokenInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "finalizeDiscloseEncryptedAmount",
-    values: [BigNumberish, BigNumberish, BytesLike[]]
+    values: [BigNumberish, BytesLike, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "isOperator",
@@ -359,7 +359,11 @@ export interface ConfidentialFungibleToken extends BaseContract {
   >;
 
   finalizeDiscloseEncryptedAmount: TypedContractMethod<
-    [requestId: BigNumberish, amount: BigNumberish, signatures: BytesLike[]],
+    [
+      requestId: BigNumberish,
+      cleartexts: BytesLike,
+      decryptionProof: BytesLike
+    ],
     [void],
     "nonpayable"
   >;
@@ -473,7 +477,11 @@ export interface ConfidentialFungibleToken extends BaseContract {
   getFunction(
     nameOrSignature: "finalizeDiscloseEncryptedAmount"
   ): TypedContractMethod<
-    [requestId: BigNumberish, amount: BigNumberish, signatures: BytesLike[]],
+    [
+      requestId: BigNumberish,
+      cleartexts: BytesLike,
+      decryptionProof: BytesLike
+    ],
     [void],
     "nonpayable"
   >;
