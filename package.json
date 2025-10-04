@@ -24,9 +24,12 @@
     "hardhat"
   ],
   "dependencies": {
-    "encrypted-types": "^0.0.4",
-    "@fhevm/solidity": "^0.8.0",
-    "@zama-fhe/oracle-solidity": "^0.1.0"
+    "@fhevm/solidity": "^0.7.0",
+    "@fordefi/web3-provider": "^0.3.0",
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@openzeppelin/confidential-contracts": "^0.2.0",
+    "@zama-fhe/oracle-solidity": "^0.1.0",
+    "encrypted-types": "^0.0.4"
   },
   "devDependencies": {
     "@fhevm/hardhat-plugin": "^0.1.0",
@@ -66,23 +69,9 @@
     "contracts"
   ],
   "scripts": {
-    "clean": "rimraf ./fhevmTemp ./artifacts ./cache ./coverage ./types ./coverage.json ./dist && npm run typechain",
-    "compile": "cross-env TS_NODE_TRANSPILE_ONLY=true hardhat compile",
-    "coverage": "cross-env SOLIDITY_COVERAGE=true hardhat coverage --solcoverjs ./.solcover.js --temp artifacts --testfiles \"test/**/*.ts\" && npm run typechain",
-    "lint": "npm run lint:sol && npm run lint:ts && npm run prettier:check",
-    "lint:sol": "solhint --max-warnings 0 \"contracts/**/*.sol\"",
-    "lint:ts": "eslint --ignore-path ./.eslintignore --ext .js,.ts .",
-    "postcompile": "npm run typechain",
-    "prettier:check": "prettier --check \"**/*.{js,json,md,sol,ts,yml}\"",
-    "prettier:write": "prettier --write \"**/*.{js,json,md,sol,ts,yml}\"",
-    "test": "hardhat test",
-    "test:sepolia": "hardhat test --network sepolia",
-    "build:ts": "tsc --project tsconfig.json",
-    "typechain": "cross-env TS_NODE_TRANSPILE_ONLY=true hardhat typechain",
-    "chain": "hardhat node --network hardhat --no-deploy",
-    "deploy:localhost": "hardhat deploy --network localhost",
-    "deploy:sepolia": "hardhat deploy --network sepolia",
-    "verify:sepolia": "hardhat verify --network sepolia"
+    "build": "npx hardhat compile",
+    "clean": "npx hardhat clean",
+    "deploy": "npx hardhat run --network sepolia deploy/deploy.ts"
   },
   "overrides": {
     "ws@>=7.0.0 <7.5.10": ">=7.5.10",

@@ -1,17 +1,60 @@
-import { DeployFunction } from "hardhat-deploy/types";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
+import fs from 'fs';
+import hre from "hardhat";
+import dotenv from 'dotenv';
+import "@nomicfoundation/hardhat-ethers";
+import { getProvider } from "./get-provider";
+import { HttpNetworkUserConfig } from "hardhat/types";
+import { FordefiProviderConfig } from "@fordefi/web3-provider";
 
-const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const { deployer } = await hre.getNamedAccounts();
-  const { deploy } = hre.deployments;
+dotenv.config()
 
-  const deployedFHECounter = await deploy("FHECounter", {
-    from: deployer,
-    log: true,
-  });
+const FORDEFI_API_USER_TOKEN = process.env.FORDEFI_API_USER_MACBOOK_PRO_BOT ?? 
+(() => { throw new Error('FORDEFI_API_USER_TOKEN is not set') })();
+const privateKeyFilePath = './secrets/private2.pem';
+const PEM_PRIVATE_KEY = fs.readFileSync(privateKeyFilePath, 'utf8') ??
+(() => { throw new Error('PEM_PRIVATE_KEY is not set') })();
+const FORDEFI_EVM_VAULT_ADDRESS = process.env.FORDEFI_EVM_VAULT_ADDRESS ?? 
+(() => { throw new Error('FORDEFI_EVM_VAULT_ADDRESS is not set') })();
 
-  console.log(`FHECounter contract: `, deployedFHECounter.address);
+const config: FordefiProviderConfig = {
+    address: FORDEFI_EVM_VAULT_ADDRESS as `0x${string}`,
+    apiUserToken: FORDEFI_API_USER_TOKEN,
+    apiPayloadSignKey: PEM_PRIVATE_KEY,
+    chainId: 11155111,
+    rpcUrl: "https://ethereum-sepolia.publicnode.com",
 };
-export default func;
-func.id = "deploy_fheCounter"; // id required to prevent reexecution
-func.tags = ["FHECounter"];
+
+async function main() {
+    let provider = await getProvider(config);
+    if (!provider) throw new Error("Failed to initialize provider");
+    let web3Provider = new hre.ethers.BrowserProvider(provider); 
+  
+    const signer = await web3Provider.getSigner();
+    const signerAddress = await signer.getAddress();
+    const factory = await hre.ethers.getContractFactory("eToken", signer);
+    console.log('Deploying eToken contract...');
+
+    const initialAmount = 1000000; // Initial token supply
+    const tokenName = "eToken";
+    const tokenSymbol = "ETK";
+    const tokenURI = ""; // Empty string for basic deployment
+
+    const contract = await factory.deploy(
+        signerAddress,  // owner
+        initialAmount,  // amount
+        tokenName,      // name
+        tokenSymbol,    // symbol
+        tokenURI        // tokenURI
+    );
+    console.log(contract);
+    const ok = await contract.waitForDeployment();
+    console.log(ok);
+    console.log('eToken deployed to:', await contract.getAddress());
+}
+
+main()
+    .then(() => process.exit(0))
+    .catch(error => {
+        console.error(error);
+        process.exit(1);
+    });
