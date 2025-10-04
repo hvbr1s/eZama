@@ -3,7 +3,6 @@ import hre from "hardhat";
 import dotenv from 'dotenv';
 import "@nomicfoundation/hardhat-ethers";
 import { getProvider } from "./get-provider";
-import { HttpNetworkUserConfig } from "hardhat/types";
 import { FordefiProviderConfig } from "@fordefi/web3-provider";
 
 dotenv.config()
@@ -46,10 +45,12 @@ async function main() {
         tokenSymbol,    // symbol
         tokenURI        // tokenURI
     );
-    console.log(contract);
     const ok = await contract.waitForDeployment();
-    console.log(ok);
-    console.log('eToken deployed to:', await contract.getAddress());
+    if (ok){
+        console.log('eToken deployed to:', await contract.getAddress());
+    } else {
+        console.log("Error deploying")
+    }
 }
 
 main()
