@@ -34,12 +34,12 @@ async function main() {
     console.log('Deploying eToken contract...');
 
     const initialAmount = 1000000; // Initial token supply
-    const tokenName = "eToken";
-    const tokenSymbol = "ETK";
-    const tokenURI = ""; // Empty string for basic deployment
+    const tokenName = "eToken2";
+    const tokenSymbol = "ETK2";
+    const tokenURI = "";
 
     const contract = await factory.deploy(
-        signerAddress,  // owner
+        "0x83c1C2a52d56dFb958C52831a3D683cFAfC34c75",  // owner
         initialAmount,  // amount
         tokenName,      // name
         tokenSymbol,    // symbol
