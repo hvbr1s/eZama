@@ -54,13 +54,14 @@ contract eBatcher is ReentrancyGuard, Ownable {
         IConfidentialFungibleToken tokenContract = IConfidentialFungibleToken(token);
         for (uint16 i = 0; i < n; ) {
             address to = recipients[i];
-            if (to == address(0)) revert ZeroAddress();
-
-            tokenContract.confidentialTransferFrom(msg.sender, to, eAmountPerRecipient);
-            unchecked { ++i; }
+            if (to == address(0)) {
+                revert ZeroAddress();
+            } else {
+                tokenContract.confidentialTransferFrom(msg.sender, to, eAmountPerRecipient);
+                unchecked { ++i; }
+            }
         }
 
-        // Calculate total for event
         euint64 eTotal = FHE.mul(eAmountPerRecipient, uint64(n));
         FHE.allowThis(eTotal);
         FHE.allow(eTotal, msg.sender);
@@ -88,14 +89,15 @@ contract eBatcher is ReentrancyGuard, Ownable {
 
         for (uint16 i = 0; i < n; ) {
             address to = recipients[i];
-            if (to == address(0)) revert ZeroAddress();
-
+            if (to == address(0)) {
+                revert ZeroAddress();
+            } else {
             euint64 eAmount = FHE.fromExternal(amounts[i], inputProof);
             tokenContract.confidentialTransferFrom(msg.sender, to, eAmount);
-
-            // Accumulate total
             eTotal = FHE.add(eTotal, eAmount);
             unchecked { ++i; }
+            }
+
         }
         emit BatchTokenTransfer(msg.sender, token, eTotal, n);
     }
