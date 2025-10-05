@@ -71,7 +71,7 @@
     "build": "npx hardhat compile",
     "clean": "npx hardhat clean",
     "deploy": "npx hardhat run --network sepolia deploy/deploy.ts",
-    "test": "npx hardhat test test/eBatcher.test.ts"
+    "test": "npx hardhat test test/eBatcher.integration.test.ts"
   },
   "overrides": {
     "ws@>=7.0.0 <7.5.10": ">=7.5.10",
