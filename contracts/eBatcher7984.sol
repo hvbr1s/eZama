@@ -10,9 +10,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract eBatcher7984 is ReentrancyGuard, Ownable, SepoliaConfig {
     uint16 public MAX_BATCH_SIZE = 10;
     
-    event TokenRescued(address indexed);
     event NewMaxBatchSize(uint16 size);
-    event BatchTokenTransfer(address indexed, address);
+    event TokenRescued(address indexed token, address recipient);
+    event BatchTokenTransfer(address indexed, address[] recipients);
 
     error InsufficientTokenAllowance();
     error InsufficientTokenBalance();
@@ -41,27 +41,26 @@ contract eBatcher7984 is ReentrancyGuard, Ownable, SepoliaConfig {
         externalEuint64 amountPerRecipient,
         bytes calldata inputProof
     ) external nonReentrant returns (bool) {
-        if (token == address(0)) revert ZeroAddress();
 
         uint256 n = recipients.length;
+
+        if (token == address(0)) revert ZeroAddress();
         if (n == 0) revert RequireOneRecipient();
         if (n > MAX_BATCH_SIZE) revert BatchSizeExceeded();
 
         euint64 eAmountPerRecipient = FHE.fromExternal(amountPerRecipient, inputProof);
         require(FHE.isInitialized(eAmountPerRecipient), "eAmountPerRecipient not initialized!");
-        FHE.allowThis(eAmountPerRecipient);
-        FHE.allow(eAmountPerRecipient, msg.sender);
 
-        IERC7984 tokenContract = IERC7984(token);
         FHE.allow(eAmountPerRecipient, token);
+
         for (uint16 i = 0; i < n; ) {
             address to = recipients[i];
             if (to == address(0)) revert ZeroAddress();
-            tokenContract.confidentialTransferFrom(msg.sender, to, eAmountPerRecipient);
+            IERC7984(token).confidentialTransferFrom(msg.sender, to, eAmountPerRecipient);
             unchecked { ++i; }
-
-            emit BatchTokenTransfer(msg.sender, to);
         }
+
+        emit BatchTokenTransfer(msg.sender, recipients);
 
         return true;
     }
@@ -74,30 +73,26 @@ contract eBatcher7984 is ReentrancyGuard, Ownable, SepoliaConfig {
         externalEuint64[] calldata amounts,
         bytes calldata inputProof
     ) external nonReentrant returns(bool) {
-        if (token == address(0)) revert ZeroAddress();
-        if(recipients.length != amounts.length) revert ArrayLengthMismatch();
 
         uint256 n = recipients.length;
+
+        if (token == address(0)) revert ZeroAddress();
+        if(recipients.length != amounts.length) revert ArrayLengthMismatch();
         if (n == 0) revert RequireOneRecipient();
         if (n > MAX_BATCH_SIZE) revert BatchSizeExceeded();
 
-        IERC7984 tokenContract = IERC7984(token);
-
         for (uint16 i = 0; i < n; ) {
             address to = recipients[i];
-            if (to == address(0)) {
-                revert ZeroAddress();
-            }
+            if (to == address(0))revert ZeroAddress();
             euint64 eAmount = FHE.fromExternal(amounts[i], inputProof);
             require(FHE.isInitialized(eAmount), "eAmount not initialized!");
-            FHE.allowThis(eAmount);
-            FHE.allow(eAmount, msg.sender);
             FHE.allow(eAmount, token);
-            tokenContract.confidentialTransferFrom(msg.sender, to, eAmount);
-            unchecked { ++i; }
+            IERC7984(token).confidentialTransferFrom(msg.sender, to, eAmount);
 
-            emit BatchTokenTransfer(msg.sender, to);
+            unchecked { ++i; }
         }
+
+        emit BatchTokenTransfer(msg.sender, recipients);
         
         return true;
     }
@@ -117,10 +112,9 @@ contract eBatcher7984 is ReentrancyGuard, Ownable, SepoliaConfig {
         FHE.allow(eAmount, msg.sender);
         FHE.allow(eAmount, token);
 
-        IERC7984 tokenContract = IERC7984(token);
-        tokenContract.confidentialTransfer(to, eAmount);
+        IERC7984(token).confidentialTransfer(to, eAmount);
 
-        emit TokenRescued(to);
+        emit TokenRescued(token, to);
 
         return true;
     }
