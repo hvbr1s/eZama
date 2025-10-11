@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.27;
 
-import { FHE, euint64, externalEuint64, euint8, eaddress, ebool } from "@fhevm/solidity/lib/FHE.sol";
+import { FHE, euint64, externalEuint64 } from "@fhevm/solidity/lib/FHE.sol";
 import { IERC7984 } from "@openzeppelin/confidential-contracts/interfaces/IERC7984.sol";
 import { SepoliaConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
@@ -108,8 +108,6 @@ contract eBatcher7984 is ReentrancyGuard, Ownable, SepoliaConfig {
         if (to == address(0)) revert ZeroAddress();
 
         euint64 eAmount = FHE.fromExternal(amount, inputProof);
-        FHE.allowThis(eAmount);
-        FHE.allow(eAmount, msg.sender);
         FHE.allow(eAmount, token);
 
         IERC7984(token).confidentialTransfer(to, eAmount);
