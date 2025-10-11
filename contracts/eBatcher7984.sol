@@ -1,17 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.27;
 
-import { FHE, euint64, externalEuint64, eaddress, ebool } from "@fhevm/solidity/lib/FHE.sol";
-import { IConfidentialFungibleToken } from "@openzeppelin/confidential-contracts/interfaces/IConfidentialFungibleToken.sol";
+import { FHE, euint64, externalEuint64, euint8, eaddress, ebool } from "@fhevm/solidity/lib/FHE.sol";
+import { IERC7984 } from "@openzeppelin/confidential-contracts/interfaces/IERC7984.sol";
 import { SepoliaConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract eBatcher is ReentrancyGuard, Ownable {
+contract eBatcher is ReentrancyGuard, Ownable, SepoliaConfig {
     uint16 public MAX_BATCH_SIZE = 50;
     
-    event BatchTokenTransfer(address indexed sender, address indexed token, euint64 totalAmount, uint256 recipients);
-    event TokenRescued(address indexed token, address indexed owner, euint64 amount);
     event NewMaxBatchSize(uint16 size);
 
     error InsufficientTokenAllowance();
@@ -40,7 +38,7 @@ contract eBatcher is ReentrancyGuard, Ownable {
         address[] calldata recipients,
         externalEuint64 amountPerRecipient,
         bytes calldata inputProof
-    ) external nonReentrant {
+    ) external nonReentrant returns (bool) {
         if (token == address(0)) revert ZeroAddress();
 
         uint256 n = recipients.length;
@@ -48,25 +46,19 @@ contract eBatcher is ReentrancyGuard, Ownable {
         if (n > MAX_BATCH_SIZE) revert BatchSizeExceeded();
 
         euint64 eAmountPerRecipient = FHE.fromExternal(amountPerRecipient, inputProof);
+        require(FHE.isInitialized(eAmountPerRecipient), "eAmountPerRecipient not initialized!");
         FHE.allowThis(eAmountPerRecipient);
         FHE.allow(eAmountPerRecipient, msg.sender);
 
-        IConfidentialFungibleToken tokenContract = IConfidentialFungibleToken(token);
+        IERC7984 tokenContract = IERC7984(token);
         for (uint16 i = 0; i < n; ) {
             address to = recipients[i];
-            if (to == address(0)) {
-                revert ZeroAddress();
-            } else {
-                tokenContract.confidentialTransferFrom(msg.sender, to, eAmountPerRecipient);
-                unchecked { ++i; }
-            }
+            require(to != address(0), "Recipient cannot be 0 address");
+            tokenContract.confidentialTransferFrom(msg.sender, to, eAmountPerRecipient);
+            unchecked { ++i; }
         }
 
-        euint64 eTotal = FHE.mul(eAmountPerRecipient, uint64(n));
-        FHE.allowThis(eTotal);
-        FHE.allow(eTotal, msg.sender);
-
-        emit BatchTokenTransfer(msg.sender, token, eTotal, n);
+        return true;
     }
 
     /// @notice Send DIFFERENT token amounts to many recipients
@@ -76,30 +68,30 @@ contract eBatcher is ReentrancyGuard, Ownable {
         address[] calldata recipients,
         externalEuint64[] calldata amounts,
         bytes calldata inputProof
-    ) external nonReentrant {
+    ) external nonReentrant returns(bool) {
         if (token == address(0)) revert ZeroAddress();
+        if(recipients.length != amounts.length) revert ArrayLengthMismatch();
 
         uint256 n = recipients.length;
         if (n == 0) revert RequireOneRecipient();
-        if (n != amounts.length) revert ArrayLengthMismatch();
         if (n > MAX_BATCH_SIZE) revert BatchSizeExceeded();
 
-        euint64 eTotal = FHE.asEuint64(0);
-        IConfidentialFungibleToken tokenContract = IConfidentialFungibleToken(token);
+        IERC7984 tokenContract = IERC7984(token);
 
         for (uint16 i = 0; i < n; ) {
             address to = recipients[i];
             if (to == address(0)) {
                 revert ZeroAddress();
-            } else {
-            euint64 eAmount = FHE.fromExternal(amounts[i], inputProof);
-            tokenContract.confidentialTransferFrom(msg.sender, to, eAmount);
-            eTotal = FHE.add(eTotal, eAmount);
-            unchecked { ++i; }
             }
-
+            euint64 eAmount = FHE.fromExternal(amounts[i], inputProof);
+            require(FHE.isInitialized(eAmount), "eAmount not initialized!");
+            FHE.allowThis(eAmount);
+            FHE.allow(eAmount, msg.sender);
+            tokenContract.confidentialTransferFrom(msg.sender, to, eAmount);
+            unchecked { ++i; }
         }
-        emit BatchTokenTransfer(msg.sender, token, eTotal, n);
+        
+        return true;
     }
 
     /// @notice Rescues tokens accidentally sent to the contract
@@ -108,7 +100,7 @@ contract eBatcher is ReentrancyGuard, Ownable {
         address to,
         externalEuint64 amount,
         bytes calldata inputProof
-    ) external onlyOwner {
+    ) external onlyOwner returns(bool) {
         if (token == address(0)) revert ZeroAddress();
         if (to == address(0)) revert ZeroAddress();
 
@@ -116,10 +108,10 @@ contract eBatcher is ReentrancyGuard, Ownable {
         FHE.allowThis(eAmount);
         FHE.allow(eAmount, msg.sender);
 
-        IConfidentialFungibleToken tokenContract = IConfidentialFungibleToken(token);
+        IERC7984 tokenContract = IERC7984(token);
         tokenContract.confidentialTransfer(to, eAmount);
 
-        emit TokenRescued(token, to, eAmount);
+        return true;
     }
 
     /// @notice Changes MAX_BATCH_SIZE

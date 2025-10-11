@@ -46,17 +46,17 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IInputVerifier__factory>;
     getContractFactory(
-      name: "IConfidentialFungibleToken",
+      name: "IERC7984",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IConfidentialFungibleToken__factory>;
+    ): Promise<Contracts.IERC7984__factory>;
     getContractFactory(
-      name: "IConfidentialFungibleTokenReceiver",
+      name: "IERC7984Receiver",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IConfidentialFungibleTokenReceiver__factory>;
+    ): Promise<Contracts.IERC7984Receiver__factory>;
     getContractFactory(
-      name: "ConfidentialFungibleToken",
+      name: "ERC7984",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ConfidentialFungibleToken__factory>;
+    ): Promise<Contracts.ERC7984__factory>;
     getContractFactory(
       name: "Ownable",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -74,9 +74,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.EBatcher__factory>;
     getContractFactory(
-      name: "EToken",
+      name: "EToken7984",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.EToken__factory>;
+    ): Promise<Contracts.EToken7984__factory>;
 
     getContractAt(
       name: "EthereumConfig",
@@ -119,20 +119,20 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IInputVerifier>;
     getContractAt(
-      name: "IConfidentialFungibleToken",
+      name: "IERC7984",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.IConfidentialFungibleToken>;
+    ): Promise<Contracts.IERC7984>;
     getContractAt(
-      name: "IConfidentialFungibleTokenReceiver",
+      name: "IERC7984Receiver",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.IConfidentialFungibleTokenReceiver>;
+    ): Promise<Contracts.IERC7984Receiver>;
     getContractAt(
-      name: "ConfidentialFungibleToken",
+      name: "ERC7984",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.ConfidentialFungibleToken>;
+    ): Promise<Contracts.ERC7984>;
     getContractAt(
       name: "Ownable",
       address: string | ethers.Addressable,
@@ -154,10 +154,10 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.EBatcher>;
     getContractAt(
-      name: "EToken",
+      name: "EToken7984",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.EToken>;
+    ): Promise<Contracts.EToken7984>;
 
     deployContract(
       name: "EthereumConfig",
@@ -192,17 +192,17 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IInputVerifier>;
     deployContract(
-      name: "IConfidentialFungibleToken",
+      name: "IERC7984",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IConfidentialFungibleToken>;
+    ): Promise<Contracts.IERC7984>;
     deployContract(
-      name: "IConfidentialFungibleTokenReceiver",
+      name: "IERC7984Receiver",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IConfidentialFungibleTokenReceiver>;
+    ): Promise<Contracts.IERC7984Receiver>;
     deployContract(
-      name: "ConfidentialFungibleToken",
+      name: "ERC7984",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.ConfidentialFungibleToken>;
+    ): Promise<Contracts.ERC7984>;
     deployContract(
       name: "Ownable",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -220,9 +220,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.EBatcher>;
     deployContract(
-      name: "EToken",
+      name: "EToken7984",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.EToken>;
+    ): Promise<Contracts.EToken7984>;
 
     deployContract(
       name: "EthereumConfig",
@@ -265,20 +265,20 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IInputVerifier>;
     deployContract(
-      name: "IConfidentialFungibleToken",
+      name: "IERC7984",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IConfidentialFungibleToken>;
+    ): Promise<Contracts.IERC7984>;
     deployContract(
-      name: "IConfidentialFungibleTokenReceiver",
+      name: "IERC7984Receiver",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IConfidentialFungibleTokenReceiver>;
+    ): Promise<Contracts.IERC7984Receiver>;
     deployContract(
-      name: "ConfidentialFungibleToken",
+      name: "ERC7984",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.ConfidentialFungibleToken>;
+    ): Promise<Contracts.ERC7984>;
     deployContract(
       name: "Ownable",
       args: any[],
@@ -300,10 +300,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.EBatcher>;
     deployContract(
-      name: "EToken",
+      name: "EToken7984",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.EToken>;
+    ): Promise<Contracts.EToken7984>;
 
     // default types
     getContractFactory(
