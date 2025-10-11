@@ -30,20 +30,20 @@ async function main() {
   
     const signer = await web3Provider.getSigner();
     const signerAddress = await signer.getAddress();
-    const factory = await hre.ethers.getContractFactory("eToken7984", signer);
+    const factory = await hre.ethers.getContractFactory("eBatcher7984", signer);
     console.log('Deploying contract...');
 
-    const initialAmount = 1000000000000; // 1 millie (6 decimals)
-    const tokenName = "eToken8";
-    const tokenSymbol = "E8";
-    const tokenURI = "";
+    // const initialAmount = 1000000000000; // 1 millie (6 decimals)
+    // const tokenName = "eToken8";
+    // const tokenSymbol = "E8";
+    // const tokenURI = "";
 
     const contract = await factory.deploy(
         "0x83c1C2a52d56dFb958C52831a3D683cFAfC34c75",  // owner
-        initialAmount,  // amount
-        tokenName,      // name
-        tokenSymbol,    // symbol
-        tokenURI        // tokenURI
+        // initialAmount,  // amount
+        // tokenName,      // name
+        // tokenSymbol,    // symbol
+        // tokenURI        // tokenURI
     );
     const ok = await contract.waitForDeployment();
     if (ok){

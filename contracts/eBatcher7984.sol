@@ -7,10 +7,12 @@ import { SepoliaConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract eBatcher is ReentrancyGuard, Ownable, SepoliaConfig {
-    uint16 public MAX_BATCH_SIZE = 50;
+contract eBatcher7984 is ReentrancyGuard, Ownable, SepoliaConfig {
+    uint16 public MAX_BATCH_SIZE = 10;
     
+    event TokenRescued(address indexed);
     event NewMaxBatchSize(uint16 size);
+    event BatchTokenTransfer(address indexed, address);
 
     error InsufficientTokenAllowance();
     error InsufficientTokenBalance();
@@ -21,8 +23,8 @@ contract eBatcher is ReentrancyGuard, Ownable, SepoliaConfig {
     error ETHSendFailed();
     error RequireOneRecipient();
     error NotEnoughETH();
-    error MinimumSizeIsTen();
-    error MaximumSizeExceeded();
+    error MinimumSizeIsTwo();
+    error MaximumSizeIsTen();
     error BatchFailed();
 
     constructor(address owner_) Ownable(owner_){}
@@ -51,11 +53,14 @@ contract eBatcher is ReentrancyGuard, Ownable, SepoliaConfig {
         FHE.allow(eAmountPerRecipient, msg.sender);
 
         IERC7984 tokenContract = IERC7984(token);
+        FHE.allow(eAmountPerRecipient, token);
         for (uint16 i = 0; i < n; ) {
             address to = recipients[i];
-            require(to != address(0), "Recipient cannot be 0 address");
+            if (to == address(0)) revert ZeroAddress();
             tokenContract.confidentialTransferFrom(msg.sender, to, eAmountPerRecipient);
             unchecked { ++i; }
+
+            emit BatchTokenTransfer(msg.sender, to);
         }
 
         return true;
@@ -87,8 +92,11 @@ contract eBatcher is ReentrancyGuard, Ownable, SepoliaConfig {
             require(FHE.isInitialized(eAmount), "eAmount not initialized!");
             FHE.allowThis(eAmount);
             FHE.allow(eAmount, msg.sender);
+            FHE.allow(eAmount, token);
             tokenContract.confidentialTransferFrom(msg.sender, to, eAmount);
             unchecked { ++i; }
+
+            emit BatchTokenTransfer(msg.sender, to);
         }
         
         return true;
@@ -107,17 +115,20 @@ contract eBatcher is ReentrancyGuard, Ownable, SepoliaConfig {
         euint64 eAmount = FHE.fromExternal(amount, inputProof);
         FHE.allowThis(eAmount);
         FHE.allow(eAmount, msg.sender);
+        FHE.allow(eAmount, token);
 
         IERC7984 tokenContract = IERC7984(token);
         tokenContract.confidentialTransfer(to, eAmount);
+
+        emit TokenRescued(to);
 
         return true;
     }
 
     /// @notice Changes MAX_BATCH_SIZE
     function changeMaxBatchSize(uint16 size) external onlyOwner{
-        if (size < 10) revert MinimumSizeIsTen();
-        if (size > 100) revert MaximumSizeExceeded();
+        if (size < 2) revert MinimumSizeIsTwo();
+        if (size > 10) revert MaximumSizeIsTen();
         MAX_BATCH_SIZE = size;
 
         emit NewMaxBatchSize(size);
