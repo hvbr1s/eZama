@@ -7,21 +7,17 @@ import { FordefiProviderConfig } from "@fordefi/web3-provider";
 
 dotenv.config()
 
-const { upgrades } = require("hardhat");
-const FORDEFI_API_USER_TOKEN = process.env.FORDEFI_API_USER_MACBOOK_PRO_BOT ?? 
-(() => { throw new Error('FORDEFI_API_USER_TOKEN is not set') })();
-const privateKeyFilePath = './secrets/private2.pem';
-const PEM_PRIVATE_KEY = fs.readFileSync(privateKeyFilePath, 'utf8') ??
-(() => { throw new Error('PEM_PRIVATE_KEY is not set') })();
-const FORDEFI_EVM_VAULT_ADDRESS = process.env.FORDEFI_EVM_VAULT_ADDRESS ?? 
-(() => { throw new Error('FORDEFI_EVM_VAULT_ADDRESS is not set') })();
+const FORDEFI_API_USER_TOKEN = process.env.FORDEFI_API_USER_MACBOOK_PRO_BOT!
+const PEM_PRIVATE_KEY = fs.readFileSync('./secrets/private2.pem', 'utf8')
+const FORDEFI_EVM_VAULT_ADDRESS = process.env.FORDEFI_EVM_VAULT_ADDRESS!
+const RPC_URL = process.env.ALCHEMY_RPC!
 
 const config: FordefiProviderConfig = {
     address: FORDEFI_EVM_VAULT_ADDRESS as `0x${string}`,
     apiUserToken: FORDEFI_API_USER_TOKEN,
     apiPayloadSignKey: PEM_PRIVATE_KEY,
     chainId: 11155111,
-    rpcUrl: "https://ethereum-sepolia.publicnode.com",
+    rpcUrl: RPC_URL,
 };
 
 async function main() {
@@ -30,26 +26,32 @@ async function main() {
     let web3Provider = new hre.ethers.BrowserProvider(provider); 
   
     const deployer = await web3Provider.getSigner();
-    
+    console.log("Deployer address", deployer.getAddress());
+
+    const contractOwner = "0x8BFCF9e2764BC84DE4BBd0a0f5AAF19F47027A73";
+
     const factory = await hre.ethers.getContractFactory("eBatcher7984Upgradeable", deployer);
     console.log('Deploying upgradeable contract...');
 
     console.log("\nDeploying proxy and implementation...");
-    const proxy = await upgrades.deployProxy(
+    const proxy = await hre.upgrades.deployProxy(
         factory,
-        [deployer.address], // initializer arguments: owner address
-        { 
+        [contractOwner], // initializer arguments: owner address
+        {
         initializer: 'initialize',
         kind: 'uups'
         }
     );
-
-    await proxy.waitForDeployment();
+    try {
+        await proxy.waitForDeployment();
+    } catch (error) {
+        console.log(error)
+    }
     const proxyAddress = await proxy.getAddress();
     console.log("\n✅ Proxy deployed to:", proxyAddress);
 
     // Get implementation address
-    const implementationAddress = await upgrades.erc1967.getImplementationAddress(proxyAddress);
+    const implementationAddress = await hre.upgrades.erc1967.getImplementationAddress(proxyAddress);
     console.log("📝 Implementation deployed to:", implementationAddress);
 
     // Verify the deployment
