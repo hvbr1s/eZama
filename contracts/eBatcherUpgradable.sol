@@ -16,7 +16,7 @@ contract eBatcher7984Upgradeable is
     ReentrancyGuardUpgradeable, 
     SepoliaConfig 
 {
-    uint16 public MAX_BATCH_SIZE = 20;
+    uint16 public MAX_BATCH_SIZE;
     
     event NewMaxBatchSize(uint16 size);
     event TokenRescued(address indexed token, address recipient);
