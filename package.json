@@ -74,7 +74,7 @@
     "compile": "npx hardhat compile",
     "clean": "npx hardhat clean",
     "deploy": "npx hardhat run --network sepolia deploy/deploy.ts",
-    "deploy-upgradeable": "npx hardhat run --network sepolia deploy/deploy-upgradeable.ts",
+    "deploy-upgrade": "npx hardhat run --network sepolia deploy/deploy-upgradeable.ts",
     "test": "npx hardhat test test/eBatcher.integration.test.ts"
   },
   "overrides": {
