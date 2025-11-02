@@ -26,7 +26,7 @@ async function main() {
     let web3Provider = new hre.ethers.BrowserProvider(provider); 
   
     const deployer = await web3Provider.getSigner();
-    console.log("Deployer address", deployer.getAddress());
+    console.log("Deployer address", await deployer.getAddress());
 
     const contractOwner = "0x8BFCF9e2764BC84DE4BBd0a0f5AAF19F47027A73";
 
