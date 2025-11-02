@@ -26,4 +26,5 @@ yarn.lock
 .env
 secrets
 typechain-types
+package-lock.json
 bin

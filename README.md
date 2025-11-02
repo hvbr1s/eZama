@@ -4,21 +4,43 @@ This repository contains the eBatcher7984 smart contract for batching confidenti
 
 ## Contract Information
 
+### Non-Upgradeable Deployment (Legacy)
+
 - **Contract Name**: eBatcher7984
 - **Network**: Ethereum Sepolia
 - **Deployed Address**: `0x6c2C8A3Bd837f8F0c3286885ea17c17392af91df`
 - **Owner Address**: `0x83c1C2a52d56dFb958C52831a3D683cFAfC34c75`
-- **Etherscan**: https://sepolia.etherscan.io/address/0x6c2c8a3bd837f8f0c3286885ea17c17392af91df
+- **Etherscan**: <https://sepolia.etherscan.io/address/0x6c2c8a3bd837f8f0c3286885ea17c17392af91df>
+
+### Upgradeable Deployment (Current)
+
+- **Contract Name**: eBatcher7984Upgradeable
+- **Network**: Ethereum Sepolia
+- **Proxy Address**: `0xD49a2F55cDd08F5e248b68C2e0645B2bE6fb8Da9`
+- **Implementation Address**: `0xCA3CD61d243D5B08f342C304ADD03dF5859eb6f7`
+- **Owner Address**: `0x8BFCF9e2764BC84DE4BBd0a0f5AAF19F47027A73`
+- **Proxy Etherscan**: <https://sepolia.etherscan.io/address/0xD49a2F55cDd08F5e248b68C2e0645B2bE6fb8Da9>
+- **Implementation Etherscan**: <https://sepolia.etherscan.io/address/0xCA3CD61d243D5B08f342C304ADD03dF5859eb6f7>
 
 ## Deployment
 
-The contract is deployed using Hardhat with the Fordefi Web3 provider. See [deploy/deploy.ts](deploy/deploy.ts) for the deployment script.
+The contract is deployed using Hardhat with the Fordefi Web3 provider.
 
-### Deploy Command
+### Deploy Commands
+
+Non-upgradeable version:
 
 ```bash
 npx hardhat run deploy/deploy.ts --network sepolia
 ```
+
+Upgradeable version:
+
+```bash
+npm run deploy-upgrade
+```
+
+See [deploy/deploy-upgradeable.ts](deploy/deploy-upgradeable.ts) for the upgradeable deployment script.
 
 ## Verification
 
@@ -27,9 +49,8 @@ The contract uses specific compiler settings that must be matched for successful
 - **Solidity Version**: 0.8.27
 - **Optimizer**: Enabled with 10000 runs
 - **EVM Version**: prague
-- **Constructor Argument**: `0x83c1C2a52d56dFb958C52831a3D683cFAfC34c75` (owner address)
 
-### Verify with Foundry
+### Verify Non-Upgradeable Contract with Foundry
 
 ```bash
 forge verify-contract \
@@ -42,6 +63,36 @@ forge verify-contract \
   --evm-version prague \
   --watch
 ```
+
+### Verify Upgradeable Contract with Foundry
+
+#### Step 1: Verify the Implementation Contract
+
+```bash
+forge verify-contract \
+  0xCA3CD61d243D5B08f342C304ADD03dF5859eb6f7 \
+  contracts/eBatcherUpgradable.sol:eBatcher7984Upgradeable \
+  --chain sepolia \
+  --compiler-version 0.8.27 \
+  --optimizer-runs 10000 \
+  --evm-version prague \
+  --watch
+```
+
+#### Step 2: Verify the Proxy Contract
+
+```bash
+forge verify-contract \
+  0xD49a2F55cDd08F5e248b68C2e0645B2bE6fb8Da9 \
+  @openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol:ERC1967Proxy \
+  --chain sepolia \
+  --compiler-version 0.8.27 \
+  --constructor-args $(cast abi-encode "constructor(address,bytes)" "0xCA3CD61d243D5B08f342C304ADD03dF5859eb6f7" $(cast calldata "initialize(address)" "0x8BFCF9e2764BC84DE4BBd0a0f5AAF19F47027A73")) \
+  --optimizer-runs 200 \
+  --watch
+```
+
+Alternatively, use Etherscan's "Verify as Proxy" feature after verifying the implementation.
 
 ### Verify with Hardhat
 

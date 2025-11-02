@@ -3,18 +3,17 @@ pragma solidity 0.8.27;
 
 import { FHE, euint64, externalEuint64 } from "@fhevm/solidity/lib/FHE.sol";
 import { IERC7984 } from "@openzeppelin/confidential-contracts/interfaces/IERC7984.sol";
-import { SepoliaConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
+import { ZamaConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract eBatcher7984Upgradeable is 
-    Initializable, 
-    UUPSUpgradeable, 
+contract eBatcher7984Upgradeable is
+    Initializable,
+    UUPSUpgradeable,
     OwnableUpgradeable,
-    ReentrancyGuardUpgradeable, 
-    SepoliaConfig 
+    ReentrancyGuardUpgradeable 
 {
     uint16 public MAX_BATCH_SIZE;
     
@@ -39,8 +38,15 @@ contract eBatcher7984Upgradeable is
         __Ownable_init(owner_);
         __UUPSUpgradeable_init();
         __ReentrancyGuard_init();
-        
+
+        // Initialize FHEVM configuration for Sepolia
+        FHE.setCoprocessor(ZamaConfig.getSepoliaConfig());
+
         MAX_BATCH_SIZE = 20;
+    }
+
+    function protocolId() public pure returns (uint256) {
+        return ZamaConfig.getSepoliaProtocolId();
     }
 
      /// @notice Only owner can upgrade
