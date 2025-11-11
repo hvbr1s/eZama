@@ -94,6 +94,19 @@ forge verify-contract \
 
 Alternatively, use Etherscan's "Verify as Proxy" feature after verifying the implementation.
 
+### Verify eToken7984 Contract with Foundry
+
+```bash
+forge verify-contract \
+  0x4a8c427ebe0b22427d23bbf518fd4a3017a3a4a4 \
+  contracts/eToken7984.sol:eToken7984 \
+  --chain sepolia \
+  --compiler-version 0.8.27 \
+  --optimizer-runs 10000 \
+  --evm-version prague \
+  --watch
+```
+
 ### Verify with Hardhat
 
 ```bash
