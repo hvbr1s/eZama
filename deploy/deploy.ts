@@ -34,7 +34,7 @@ async function main() {
     console.log('Deploying contract...');
 
     // const initialAmount = 1000000000000; // 1 millie (6 decimals)
-    const tokenName = "Encrypted ETH";
+    const tokenName = "Encrypted Wrapped Ether";
     const tokenSymbol = "eWETH";
     const tokenURI = "";
 

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.27;
 
+import { ERC7984 } from "@openzeppelin/confidential-contracts/token/ERC7984/ERC7984.sol";
 import { FHE, externalEuint64, euint64 } from "@fhevm/solidity/lib/FHE.sol";
 import { SepoliaConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
-import { ERC7984 } from "@openzeppelin/confidential-contracts/token/ERC7984/ERC7984.sol";
 
 contract eWETH is SepoliaConfig, ERC7984 {
     event Deposit(address indexed dest, uint256 amount);
@@ -30,9 +30,9 @@ contract eWETH is SepoliaConfig, ERC7984 {
         emit Deposit(msg.sender, msg.value);
     }
 
-    function withdraw(address from, externalEuint64 amount, bytes memory inputProof) external {
+    function withdraw(externalEuint64 amount, bytes memory inputProof) external {
         euint64 eWithdrawnAmount = FHE.fromExternal(amount, inputProof);
-        _burn(from, FHE.fromExternal(amount, inputProof));
+        _burn(msg.sender, FHE.fromExternal(amount, inputProof));
         emit Withdrawal(msg.sender, eWithdrawnAmount);
     }
 
