@@ -8,6 +8,14 @@ import { SepoliaConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
 contract eWETH is SepoliaConfig, ERC7984 {
     event Deposit(address indexed dest, uint256 amount);
     event Withdrawal(address indexed source, euint64 amount);
+    event WithdrawalRequested(address indexed source, uint256 indexed requestId);
+
+    struct WithdrawalRequest {
+        address user;
+        bool isPending;
+    }
+
+    mapping(uint256 => WithdrawalRequest) public withdrawalRequests;
 
     constructor(
         string memory name_,
@@ -32,8 +40,46 @@ contract eWETH is SepoliaConfig, ERC7984 {
 
     function withdraw(externalEuint64 amount, bytes memory inputProof) external {
         euint64 eWithdrawnAmount = FHE.fromExternal(amount, inputProof);
-        _burn(msg.sender, FHE.fromExternal(amount, inputProof));
-        emit Withdrawal(msg.sender, eWithdrawnAmount);
+
+        // Request decryption
+        bytes32[] memory cts = new bytes32[](1);
+        cts[0] = FHE.toBytes32(eWithdrawnAmount);
+        uint256 requestId = FHE.requestDecryption(cts, this.withdrawCallback.selector);
+
+        // Store the withdrawal request
+        withdrawalRequests[requestId] = WithdrawalRequest({
+            user: msg.sender,
+            isPending: true
+        });
+
+        _burn(msg.sender, eWithdrawnAmount);
+
+        emit WithdrawalRequested(msg.sender, requestId);
+    }
+
+    function withdrawCallback(
+        uint256 requestId,
+        bytes memory cleartexts,
+        bytes memory decryptionProof
+    ) external {
+        // Verify signatures from KMS
+        FHE.checkSignatures(requestId, cleartexts, decryptionProof);
+
+        // Get the withdrawal request
+        WithdrawalRequest storage request = withdrawalRequests[requestId];
+        require(request.isPending, "Invalid or already processed request");
+
+        // Decode the decrypted amount
+        uint64 withdrawnAmount = abi.decode(cleartexts, (uint64));
+
+        // Transfer ETH to the user
+        (bool success, ) = request.user.call{value: withdrawnAmount}("");
+        require(success, "ETH transfer failed");
+
+        // Mark as processed
+        request.isPending = false;
+
+        emit Withdrawal(request.user, FHE.asEuint64(withdrawnAmount));
     }
 
 }
