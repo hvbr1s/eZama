@@ -98,7 +98,7 @@ Alternatively, use Etherscan's "Verify as Proxy" feature after verifying the imp
 
 ```bash
 forge verify-contract \
-  0x4a8c427ebe0b22427d23bbf518fd4a3017a3a4a4 \
+  0x837565f0A3456143C01505c3d339Bc43bFAbf533 \
   contracts/eToken7984.sol:eToken7984 \
   --chain sepolia \
   --compiler-version 0.8.27 \
@@ -160,3 +160,17 @@ The eBatcher7984 contract provides the following functionality:
 - Uses OpenZeppelin's ReentrancyGuard and Ownable contracts
 - Implements Zama's FHE (Fully Homomorphic Encryption) for confidential transfers
 - Complies with ERC-7984 standard for confidential token transfers
+
+## Verify eWETH contract
+
+```bash
+forge verify-contract \
+  0x08036B36B2d19Fe06D3c86b4c530289bE17FDC20 \
+  contracts/eWETH.sol:eWETH \
+  --chain sepolia \
+  --compiler-version 0.8.27 \
+  --optimizer-runs 10000 \
+  --evm-version prague \
+  --constructor-args $(cast abi-encode "constructor(string,string,string)" "Encrypted Wrapped Ether" "eWETH" "") \
+  --watch
+```
